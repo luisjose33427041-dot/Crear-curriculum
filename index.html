@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador CV - Sistema Blindado</title>
+    <title>Generador CV - Diseño 2 Columnas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
@@ -85,24 +85,35 @@
             white-space: normal; word-wrap: break-word;
         }
 
-        /* CONTENIDO */
+        /* --- CONTENIDO DIVIDIDO EN COLUMNAS --- */
         .contenido-cv { 
-            padding: 30px 50px; flex: 1; 
-            display: flex; flex-direction: column; gap: 20px;
+            padding: 30px 40px; flex: 1; 
+            display: flex; 
+            flex-direction: row; /* AQUI ESTÁ LA MAGIA DE LAS 2 COLUMNAS */
+            gap: 40px; /* Espacio entre columnas */
             position: relative; z-index: 2;
-            padding-left: 70px; 
+            padding-left: 60px; 
+        }
+
+        .col-izquierda {
+            flex: 1.4; /* Ocupa el 60% aprox */
+        }
+
+        .col-derecha {
+            flex: 0.8; /* Ocupa el 40% aprox */
         }
 
         h3.seccion-titulo {
-            color: #000; font-size: 1.3rem; letter-spacing: 1px;
+            color: #000; font-size: 1.1rem; letter-spacing: 1px;
             border-bottom: 2px solid #000; padding-bottom: 5px; margin: 0 0 10px 0;
             text-transform: uppercase; font-weight: 800;
         }
 
         ul.lista-timeline { list-style: none; padding-left: 0; margin: 0; }
         ul.lista-timeline li { 
-            position: relative; padding-left: 20px; margin-bottom: 10px;
-            font-size: 1.05rem; color: #222; line-height: 1.4; font-weight: 500;
+            position: relative; padding-left: 15px; margin-bottom: 8px;
+            font-size: 0.95rem; color: #222; line-height: 1.4; font-weight: 500;
+            word-wrap: break-word;
         }
         ul.lista-timeline li::before { 
             content: '•'; position: absolute; left: 0; top: -2px; 
@@ -126,11 +137,21 @@
         <h2>📝 Editar CV</h2>
         <div class="input-group"><label>1. Sube tu Foto</label><input type="file" id="inpFoto" accept="image/*" onchange="cargarFoto()"></div>
         <div class="input-group"><label>2. Nombre Completo</label><input type="text" id="inpNombre" placeholder="Tu Nombre Aquí" onkeyup="actualizar()"></div>
-        <div class="input-group"><label>3. Datos Personales</label><textarea id="inpDatos" rows="3" placeholder="Cédula, Edad..." onkeyup="actualizarLista('inpDatos', 'listaDatos')"></textarea></div>
+        
+        <hr style="border:1px dashed #ccc; margin: 20px 0;">
+        <h4 style="margin:0 0 10px 0; color:#555;">Columna Izquierda (Principal)</h4>
+        
+        <div class="input-group"><label>3. Datos Personales</label><textarea id="inpDatos" rows="3" placeholder="Cédula, Edad, Nacionalidad..." onkeyup="actualizarLista('inpDatos', 'listaDatos')"></textarea></div>
         <div class="input-group"><label>4. Experiencia Laboral</label><textarea id="inpExp" rows="5" placeholder="Trabajos anteriores..." onkeyup="actualizarLista('inpExp', 'listaExp')"></textarea></div>
         <div class="input-group"><label>5. Educación</label><textarea id="inpEdu" rows="3" placeholder="Estudios..." onkeyup="actualizarLista('inpEdu', 'listaEdu')"></textarea></div>
+        
+        <hr style="border:1px dashed #ccc; margin: 20px 0;">
+        <h4 style="margin:0 0 10px 0; color:#555;">Columna Derecha (Lateral)</h4>
+
         <div class="input-group"><label>6. Contacto</label><textarea id="inpContacto" rows="3" placeholder="Teléfono, Dirección..." onkeyup="actualizarLista('inpContacto', 'listaContacto')"></textarea></div>
         <div class="input-group"><label>7. Referencias</label><textarea id="inpRef" rows="3" placeholder="Referencias..." onkeyup="actualizarLista('inpRef', 'listaRef')"></textarea></div>
+        <div class="input-group"><label>8. Redes Sociales (NUEVO)</label><textarea id="inpRedes" rows="3" placeholder="Instagram, LinkedIn..." onkeyup="actualizarLista('inpRedes', 'listaRedes')"></textarea></div>
+
         <button class="btn-accion" onclick="abrirPago()">💾 DESCARGAR (Bs. 100)</button>
     </div>
 
@@ -148,11 +169,19 @@
             </div>
 
             <div class="contenido-cv">
-                <div><h3 class="seccion-titulo">DATOS PERSONALES</h3><ul class="lista-timeline" id="listaDatos"><li>C.I: V-XX.XXX.XXX</li><li>Edad: 21 Años</li></ul></div>
-                <div><h3 class="seccion-titulo">EXPERIENCIA LABORAL</h3><ul class="lista-timeline" id="listaExp"><li>...</li></ul></div>
-                <div><h3 class="seccion-titulo">EDUCACIÓN</h3><ul class="lista-timeline" id="listaEdu"><li>...</li></ul></div>
-                <div><h3 class="seccion-titulo">DATOS DE CONTACTO</h3><ul class="lista-timeline" id="listaContacto"><li>...</li></ul></div>
-                <div><h3 class="seccion-titulo">REFERENCIAS PERSONALES</h3><ul class="lista-timeline" id="listaRef"><li>...</li></ul></div>
+                
+                <div class="col-izquierda">
+                    <div><h3 class="seccion-titulo">DATOS PERSONALES</h3><ul class="lista-timeline" id="listaDatos"><li>C.I: V-XX.XXX.XXX</li><li>Edad: 21 Años</li></ul></div>
+                    <div style="margin-top:20px;"><h3 class="seccion-titulo">EXPERIENCIA LABORAL</h3><ul class="lista-timeline" id="listaExp"><li>...</li></ul></div>
+                    <div style="margin-top:20px;"><h3 class="seccion-titulo">EDUCACIÓN</h3><ul class="lista-timeline" id="listaEdu"><li>...</li></ul></div>
+                </div>
+
+                <div class="col-derecha">
+                    <div><h3 class="seccion-titulo">DATOS DE CONTACTO</h3><ul class="lista-timeline" id="listaContacto"><li>...</li></ul></div>
+                    <div style="margin-top:20px;"><h3 class="seccion-titulo">REFERENCIAS</h3><ul class="lista-timeline" id="listaRef"><li>...</li></ul></div>
+                    <div style="margin-top:20px;"><h3 class="seccion-titulo">REDES SOCIALES</h3><ul class="lista-timeline" id="listaRedes"><li>@TuUsuario</li></ul></div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -188,7 +217,7 @@
 </div>
 
 <script>
-    // VARIABLE GLOBAL (NO TOCAR)
+    // VARIABLE GLOBAL
     let _sysRef = 0;
 
     function cargarFoto() {
@@ -210,17 +239,12 @@
         document.getElementById(salida).innerHTML = html;
     }
 
-    // --- SISTEMA DE PAGO SEGURO (CAMUFLADO / OFUSCADO) ---
+    // --- SISTEMA DE PAGO SEGURO ---
     function abrirPago() { 
         document.getElementById('modalPago').style.display = 'flex';
-        
-        // Generamos referencia aleatoria (1000 - 8999)
         _sysRef = Math.floor(Math.random() * 8999) + 1000;
-        
         document.getElementById('cod-referencia-cliente').innerText = _sysRef;
-
-        // Link WhatsApp Automático
-        const _msg = `Hola Luis, solicitud de desbloqueo CV. Ref: ${_sysRef}.`;
+        const _msg = `Hola, solicitud desbloqueo CV. Ref: ${_sysRef}.`;
         const link = `https://wa.me/584121959869?text=${encodeURIComponent(_msg)}`;
         document.getElementById('btn-whatsapp').href = link;
     }
@@ -232,23 +256,16 @@
     function verificarClave() {
         const _uInput = parseInt(document.getElementById('input-clave').value);
         const btn = document.querySelector('#modalPago .btn-accion');
-
-        // ===============================================
-        // AQUÍ ESTÁ EL TRUCO CAMUFLADO
-        // 0xD05 es el número 3333 en Hexadecimal.
-        // ===============================================
-        const _securityToken = 0xD05; 
+        const _securityToken = 0xD05; // 3333
         const _accessKey = _sysRef + _securityToken; 
 
         if (_uInput === _accessKey) {
-            // PROCESO DE DESCARGA (NO TOCAR)
             btn.innerText = "VERIFICANDO...";
             btn.disabled = true;
             document.getElementById('modalPago').style.display = 'none';
             document.getElementById('marca-seguridad').style.display = 'none';
             
             const el = document.getElementById('hoja-cv');
-            // Ajustes técnicos para que la foto salga bien en el PDF
             const stOrg = el.style.transform;
             const mgOrg = el.style.margin;
             el.style.transform = 'none'; el.style.margin = '0 auto';
@@ -263,7 +280,6 @@
 
             setTimeout(() => {
                 html2pdf().set(opt).from(el).save().then(() => {
-                    // AVISO ELEGANTE (SWEETALERT2)
                     Swal.fire({
                         icon: 'success',
                         title: '¡Descarga Exitosa!',
@@ -271,8 +287,6 @@
                         timer: 3000,
                         showConfirmButton: false
                     });
-                    
-                    // Restauramos la vista previa
                     el.style.transform = stOrg;
                     el.style.margin = mgOrg;
                     document.getElementById('marca-seguridad').style.display = 'flex';
@@ -281,11 +295,10 @@
             }, 800);
 
         } else {
-            // ERROR ELEGANTE (SWEETALERT2)
             Swal.fire({
                 icon: 'error',
                 title: 'Código Incorrecto',
-                text: 'La clave no coincide con la referencia ' + _sysRef + '. Verifica en el WhatsApp.',
+                text: 'La clave no coincide con la referencia ' + _sysRef,
                 confirmButtonColor: '#1b4f72'
             });
         }
