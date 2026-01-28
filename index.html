@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador CV - Sistema Blindado</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ESTILOS DE LA APP */
+        body { font-family: 'Roboto', Arial, sans-serif; background: #333; padding: 20px; margin: 0; }
+        .app-container { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1300px; margin: 0 auto; }
+
+        /* EDITOR (IZQUIERDA) */
+        .editor-panel { flex: 1; min-width: 300px; background: white; padding: 20px; border-radius: 8px; height: fit-content; }
+        .editor-panel h2 { color: #1b4f72; margin-top: 0; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 0.85rem; }
+        input, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        .btn-accion { background: #1b4f72; color: white; border: none; padding: 15px; width: 100%; font-size: 1.1rem; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
+
+        /* VISOR (DERECHA) */
+        .preview-panel { flex: 1.5; background: #555; padding: 30px; border-radius: 8px; display: flex; justify-content: center; overflow: auto; }
+
+        /* --- HOJA CARTA --- */
+        #hoja-cv {
+            background: white;
+            width: 215.9mm; height: 279.4mm; /* Carta */
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+            overflow: hidden; box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif !important;
+            z-index: 1;
+        }
+
+        /* DECORACIÓN */
+        .deco-columna {
+            position: absolute; top: 0; left: 0;
+            width: 35px; height: 100%;
+            background-color: #1b4f72; /* Color Tecnipro */
+            z-index: 0;
+        }
+        .deco-arco {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 120px;
+            background-color: #1b4f72; 
+            border-top-left-radius: 0; 
+            border-top-right-radius: 100% 150%;
+        }
+
+        /* MARCA DE AGUA */
+        .marca-agua {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            font-size: 5rem; font-weight: 900; color: rgba(255, 0, 0, 0.15); transform: rotate(-45deg); pointer-events: none; z-index: 99;
+            content: "SIN PAGO"; text-transform: uppercase; backdrop-filter: blur(1px);
+        }
+
+        /* BARRA SUPERIOR */
+        .barra-azul { height: 25px; background-color: #1b4f72; width: 100%; flex-shrink: 0; position: relative; z-index: 2; }
+
+        /* CABECERA */
+        .header-cv {
+            display: flex; align-items: center; 
+            padding: 30px 40px;
+            border-bottom: 3px solid #1b4f72; 
+            gap: 25px; 
+            position: relative; z-index: 2;
+            padding-left: 60px;
+        }
+
+        .marco-foto {
+            width: 130px; height: 150px; 
+            background-color: #f0f0f0; border: 4px solid #1b4f72;
+            overflow: hidden; display: flex; justify-content: center; align-items: center; color: #aaa;
+            flex-shrink: 0;
+        }
+        .marco-foto img { width: 100%; height: 100%; object-fit: cover; }
+
+        .nombre-grande {
+            flex-grow: 1; text-align: left; font-size: 2.4rem; font-weight: 900; 
+            color: #1b4f72; line-height: 1.1; text-transform: uppercase;
+            white-space: normal; word-wrap: break-word;
+        }
+
+        /* CONTENIDO */
+        .contenido-cv { 
+            padding: 30px 50px; flex: 1; 
+            display: flex; flex-direction: column; gap: 20px;
+            position: relative; z-index: 2;
+            padding-left: 70px; 
+        }
+
+        h3.seccion-titulo {
+            color: #000; font-size: 1.3rem; letter-spacing: 1px;
+            border-bottom: 2px solid #000; padding-bottom: 5px; margin: 0 0 10px 0;
+            text-transform: uppercase; font-weight: 800;
+        }
+
+        ul.lista-timeline { list-style: none; padding-left: 0; margin: 0; }
+        ul.lista-timeline li { 
+            position: relative; padding-left: 20px; margin-bottom: 10px;
+            font-size: 1.05rem; color: #222; line-height: 1.4; font-weight: 500;
+        }
+        ul.lista-timeline li::before { 
+            content: '•'; position: absolute; left: 0; top: -2px; 
+            color: #1b4f72; font-size: 1.5rem; line-height: 1;
+        }
+
+        /* MODAL PAGO */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-caja { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 350px; text-align: center; }
+
+        @media (max-width: 768px) {
+            #hoja-cv { transform: scale(0.50); transform-origin: top center; margin-bottom: -60%; }
+            .preview-panel { padding: 10px; overflow-x: hidden; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="editor-panel">
+        <h2>📝 Editar CV</h2>
+        <div class="input-group"><label>1. Sube tu Foto</label><input type="file" id="inpFoto" accept="image/*" onchange="cargarFoto()"></div>
+        <div class="input-group"><label>2. Nombre Completo</label><input type="text" id="inpNombre" placeholder="Tu Nombre Aquí" onkeyup="actualizar()"></div>
+        <div class="input-group"><label>3. Datos Personales</label><textarea id="inpDatos" rows="3" placeholder="Cédula, Edad..." onkeyup="actualizarLista('inpDatos', 'listaDatos')"></textarea></div>
+        <div class="input-group"><label>4. Experiencia Laboral</label><textarea id="inpExp" rows="5" placeholder="Trabajos anteriores..." onkeyup="actualizarLista('inpExp', 'listaExp')"></textarea></div>
+        <div class="input-group"><label>5. Educación</label><textarea id="inpEdu" rows="3" placeholder="Estudios..." onkeyup="actualizarLista('inpEdu', 'listaEdu')"></textarea></div>
+        <div class="input-group"><label>6. Contacto</label><textarea id="inpContacto" rows="3" placeholder="Teléfono, Dirección..." onkeyup="actualizarLista('inpContacto', 'listaContacto')"></textarea></div>
+        <div class="input-group"><label>7. Referencias</label><textarea id="inpRef" rows="3" placeholder="Referencias..." onkeyup="actualizarLista('inpRef', 'listaRef')"></textarea></div>
+        <button class="btn-accion" onclick="abrirPago()">💾 DESCARGAR (Bs. 100)</button>
+    </div>
+
+    <div class="preview-panel">
+        <div id="hoja-cv">
+            <div class="deco-columna"></div>
+            <div class="deco-arco"></div>
+            
+            <div id="marca-seguridad" class="marca-agua">VISTA PREVIA<br>NO PAGADA</div>
+            <div class="barra-azul"></div>
+
+            <div class="header-cv">
+                <div class="marco-foto" id="cajaFoto"><span>FOTO</span></div>
+                <div class="nombre-grande" id="txtNombre">TU NOMBRE AQUÍ</div>
+            </div>
+
+            <div class="contenido-cv">
+                <div><h3 class="seccion-titulo">DATOS PERSONALES</h3><ul class="lista-timeline" id="listaDatos"><li>C.I: V-XX.XXX.XXX</li><li>Edad: 21 Años</li></ul></div>
+                <div><h3 class="seccion-titulo">EXPERIENCIA LABORAL</h3><ul class="lista-timeline" id="listaExp"><li>...</li></ul></div>
+                <div><h3 class="seccion-titulo">EDUCACIÓN</h3><ul class="lista-timeline" id="listaEdu"><li>...</li></ul></div>
+                <div><h3 class="seccion-titulo">DATOS DE CONTACTO</h3><ul class="lista-timeline" id="listaContacto"><li>...</li></ul></div>
+                <div><h3 class="seccion-titulo">REFERENCIAS PERSONALES</h3><ul class="lista-timeline" id="listaRef"><li>...</li></ul></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalPago">
+    <div class="modal-caja">
+        <h3 style="color:#1b4f72; margin:0;">🔒 PAGO SEGURO</h3>
+        
+        <p style="font-size:0.9rem; margin-bottom:5px;"><strong>Paso 1:</strong> Tu Código de Referencia es:</p>
+        
+        <div id="cod-referencia-cliente" 
+             style="font-size: 2.2rem; font-weight: 900; color: #1b4f72; letter-spacing: 5px; background: #eee; padding: 10px; border-radius: 5px;">
+             ----
+        </div>
+
+        <p style="font-size:0.8rem; color:#666;">Envía este número junto con el capture del pago.</p>
+
+        <a id="btn-whatsapp" href="#" target="_blank"
+           style="display:block; background:#25D366; color:white; text-decoration:none; padding:12px; border-radius:5px; margin:10px 0; font-weight:bold; font-size:0.9rem;">
+           📲 1. ENVIAR PAGO POR WHATSAPP
+        </a>
+
+        <hr>
+
+        <p style="font-size:0.9rem;"><strong>Paso 2:</strong> Ingresa la CLAVE DE ACTIVACIÓN:</p>
+        <input type="number" id="input-clave" placeholder="Ingresa la clave aquí" 
+               style="text-align:center; font-size:1.5rem; letter-spacing:3px; padding:10px; width:100%;">
+        
+        <button class="btn-accion" style="background: #28a745; margin-top:10px;" onclick="verificarClave()">🔓 DESBLOQUEAR Y DESCARGAR</button>
+        <button onclick="cerrarModal()" style="margin-top:10px; border:none; background:transparent; color:red; cursor:pointer;">Cancelar</button>
+    </div>
+</div>
+
+<script>
+    // VARIABLE GLOBAL (NO TOCAR)
+    let _sysRef = 0;
+
+    function cargarFoto() {
+        const input = document.getElementById('inpFoto');
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) { document.getElementById('cajaFoto').innerHTML = `<img src="${e.target.result}">`; }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function actualizar() {
+        document.getElementById('txtNombre').innerText = document.getElementById('inpNombre').value || "TU NOMBRE AQUÍ";
+    }
+
+    function actualizarLista(input, salida) {
+        const lineas = document.getElementById(input).value.split('\n');
+        let html = ''; lineas.forEach(l => { if(l.trim()) html += `<li>${l}</li>`; });
+        document.getElementById(salida).innerHTML = html;
+    }
+
+    // --- SISTEMA DE PAGO SEGURO (CAMUFLADO / OFUSCADO) ---
+    function abrirPago() { 
+        document.getElementById('modalPago').style.display = 'flex';
+        
+        // Generamos referencia aleatoria (1000 - 8999)
+        _sysRef = Math.floor(Math.random() * 8999) + 1000;
+        
+        document.getElementById('cod-referencia-cliente').innerText = _sysRef;
+
+        // Link WhatsApp Automático
+        const _msg = `Hola Luis, solicitud de desbloqueo CV. Ref: ${_sysRef}.`;
+        const link = `https://wa.me/584121959869?text=${encodeURIComponent(_msg)}`;
+        document.getElementById('btn-whatsapp').href = link;
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalPago').style.display = 'none';
+    }
+
+    function verificarClave() {
+        const _uInput = parseInt(document.getElementById('input-clave').value);
+        const btn = document.querySelector('#modalPago .btn-accion');
+
+        // ===============================================
+        // AQUÍ ESTÁ EL TRUCO CAMUFLADO
+        // 0xD05 es el número 3333 en Hexadecimal.
+        // ===============================================
+        const _securityToken = 0xD05; 
+        const _accessKey = _sysRef + _securityToken; 
+
+        if (_uInput === _accessKey) {
+            // PROCESO DE DESCARGA (NO TOCAR)
+            btn.innerText = "VERIFICANDO...";
+            btn.disabled = true;
+            document.getElementById('modalPago').style.display = 'none';
+            document.getElementById('marca-seguridad').style.display = 'none';
+            
+            const el = document.getElementById('hoja-cv');
+            // Ajustes técnicos para que la foto salga bien en el PDF
+            const stOrg = el.style.transform;
+            const mgOrg = el.style.margin;
+            el.style.transform = 'none'; el.style.margin = '0 auto';
+
+            const opt = {
+                margin: 0,
+                filename: 'Curriculum_Final.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true, scrollY: 0, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+
+            setTimeout(() => {
+                html2pdf().set(opt).from(el).save().then(() => {
+                    // AVISO ELEGANTE (SWEETALERT2)
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Descarga Exitosa!',
+                        text: 'Gracias por tu compra. El archivo se ha guardado.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Restauramos la vista previa
+                    el.style.transform = stOrg;
+                    el.style.margin = mgOrg;
+                    document.getElementById('marca-seguridad').style.display = 'flex';
+                    btn.innerText = "🔓 DESBLOQUEAR"; btn.disabled = false;
+                });
+            }, 800);
+
+        } else {
+            // ERROR ELEGANTE (SWEETALERT2)
+            Swal.fire({
+                icon: 'error',
+                title: 'Código Incorrecto',
+                text: 'La clave no coincide con la referencia ' + _sysRef + '. Verifica en el WhatsApp.',
+                confirmButtonColor: '#1b4f72'
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
